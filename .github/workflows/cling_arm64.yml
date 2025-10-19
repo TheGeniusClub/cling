@@ -104,16 +104,16 @@ jobs:
       - name: Build Cling for Termux
         working-directory: build
         run: |
-          ninja cling -j2
+          ninja cling -j8
 
-      - name: Install
-        working-directory: build
-        run: |
-          ninja install
+      #- name: Install
+      #  working-directory: build
+      #  run: |
+      #    ninja install
 
       - name: Package
         run: |
-          cd build/install
+          cd build
           tar -cJf cling-termux-aarch64.tar.xz *
           mv cling-termux-aarch64.tar.xz $GITHUB_WORKSPACE/
 
