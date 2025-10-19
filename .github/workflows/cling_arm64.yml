@@ -38,31 +38,99 @@ jobs:
             ndk-version: ${{ env.ANDROID_NDK_VERSION }}
 
 
-      - name: Configure
+      - name: Prepare build directory
         run: |
-          mkdir build && cd build
-          cmake ../llvm/llvm \
-            -G Ninja \
+          mkdir build
+
+      - name: Configure for Termux (ARM64)
+        working-directory: build
+        run: |
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DCMAKE_SYSTEM_NAME=Android \
+            -DCMAKE_SYSTEM_VERSION=24 \
+            -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+            -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
+            -DCMAKE_C_COMPILER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang \
+            -DCMAKE_CXX_COMPILER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++ \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DLLVM_EXTERNAL_PROJECTS=cling \
-            -DLLVM_EXTERNAL_CLING_SOURCE_DIR=../cling \
+            -DLLVM_EXTERNAL_CLING_SOURCE_DIR=../cling/ \
             -DLLVM_ENABLE_PROJECTS="clang" \
             -DLLVM_TARGETS_TO_BUILD="AArch64" \
-            -DCMAKE_SYSTEM_NAME=Android \
-            -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-            -DCMAKE_ANDROID_NDK=$NDK_HOME \
-            -DCMAKE_SYSTEM_VERSION=${API_LEVEL} \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr \
-            -DCMAKE_C_COMPILER=${TARGET}21-clang \
-            -DCMAKE_CXX_COMPILER=${TARGET}21-clang++ \
-            -DLLVM_ENABLE_TERMINFO=OFF \            -DLLVM_ENABLE_ZLIB=ON \
-            -DLLVM_ENABLE_LIBXML2=ON \
-            -DLLVM_TARGETS_TO_BUILD="host;NVPTX"
+            -DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-linux-android \
+            -DLLVM_HOST_TRIPLE=aarch64-linux-android \
+            -DLLVM_TARGET_ARCH=AArch64 \
+            -DLLVM_TABLEGEN=$PWD/../native-build/bin/llvm-tblgen \
+            -DCLANG_TABLEGEN=$PWD/../native-build/bin/clang-tblgen \
+            -DLLVM_BUILD_RUNTIME=OFF \
+            -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_EXAMPLES=OFF \
+            -DLLVM_INCLUDE_BENCHMARKS=OFF \
+            -DLLVM_ENABLE_TERMINFO=OFF \
+            -DLLVM_ENABLE_LIBEDIT=OFF \
+            -DLLVM_ENABLE_ZLIB=OFF \
+            -DLLVM_ENABLE_LIBXML2=OFF \
+            ../llvm/llvm/
 
-      - name: Build Cling
+      - name: Build native tools first (for tablegen)
         run: |
-          cd build
+          mkdir native-build
+          cd native-build
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_PROJECTS="clang" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64" \
+            ../llvm/llvm/
+          ninja llvm-tblgen clang-tblgen
+
+      - name: Reconfigure with native tablegen
+        working-directory: build
+        run: |
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DCMAKE_SYSTEM_NAME=Android \
+            -DCMAKE_SYSTEM_VERSION=24 \
+            -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+            -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
+            -DCMAKE_C_COMPILER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang \
+            -DCMAKE_CXX_COMPILER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++ \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DLLVM_EXTERNAL_PROJECTS=cling \
+            -DLLVM_EXTERNAL_CLING_SOURCE_DIR=../cling/ \
+            -DLLVM_ENABLE_PROJECTS="clang" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-linux-android \
+            -DLLVM_HOST_TRIPLE=aarch64-linux-android \
+            -DLLVM_TARGET_ARCH=AArch64 \
+            -DLLVM_TABLEGEN=$PWD/../native-build/bin/llvm-tblgen \
+            -DCLANG_TABLEGEN=$PWD/../native-build/bin/clang-tblgen \
+            -DLLVM_BUILD_RUNTIME=OFF \
+            -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_EXAMPLES=OFF \
+            -DLLVM_INCLUDE_BENCHMARKS=OFF \
+            -DLLVM_ENABLE_TERMINFO=OFF \
+            -DLLVM_ENABLE_LIBEDIT=OFF \
+            -DLLVM_ENABLE_ZLIB=OFF \
+            -DLLVM_ENABLE_LIBXML2=OFF \
+            ../llvm/llvm/
+
+      - name: Build Cling for Termux
+        working-directory: build
+        run: |
           ninja cling
+
+      - name: Install
+        working-directory: build
+        run: |
+          ninja install
+
 
       - name: Package
         run: |
