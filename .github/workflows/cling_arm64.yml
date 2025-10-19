@@ -46,7 +46,7 @@ jobs:
             -DLLVM_ENABLE_PROJECTS="clang" \
             -DLLVM_TARGETS_TO_BUILD="AArch64;NVPTX" \
             ../llvm/llvm/
-          ninja llvm-tblgen clang-tblgen
+          ninja llvm-tblgen clang-tblgen -j128
 
       - name: Prepare build directory
         run: |
@@ -104,7 +104,7 @@ jobs:
       - name: Build Cling for Termux
         working-directory: build
         run: |
-          ninja cling -j64
+          ninja cling -j128
 
       #- name: Install
       #  working-directory: build
