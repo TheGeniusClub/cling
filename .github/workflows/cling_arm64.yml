@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_NDK_VERSION: n29
+      ANDROID_NDK_VERSION: r29
       API_LEVEL: 24
       ARCH: arm64
       TARGET: aarch64-linux-android
