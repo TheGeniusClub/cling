@@ -74,6 +74,7 @@ jobs:
             -DLLVM_ENABLE_LIBEDIT=OFF \
             -DLLVM_ENABLE_ZLIB=OFF \
             -DLLVM_ENABLE_LIBXML2=OFF \
+            -DLLVM_TARGETS_TO_BUILD="host;NVPTX" \
             ../llvm/llvm/
 
       - name: Build native tools first (for tablegen)
