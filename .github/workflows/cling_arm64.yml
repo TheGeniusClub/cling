@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_NDK_VERSION: n26d
+      ANDROID_NDK_VERSION: n29
       API_LEVEL: 24
       ARCH: arm64
       TARGET: aarch64-linux-android
@@ -32,11 +32,10 @@ jobs:
           path: cling
           fetch-depth: 1
 
-      - name: Set up Android NDK
-        - uses: actions/checkout@v3
-        - uses: nttld/setup-ndk@v1
+      - name: Setup NDK Clang
+        uses: Ylarod/setup-ndk-clang@v1.0.0
         with:
-          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+            ndk-version: ${{ env.ANDROID_NDK_VERSION }}
 
       - name: Prepare toolchain
         run: |
