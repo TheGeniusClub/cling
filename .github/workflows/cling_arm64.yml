@@ -37,12 +37,6 @@ jobs:
         with:
             ndk-version: ${{ env.ANDROID_NDK_VERSION }}
 
-      - name: Prepare toolchain
-        run: |
-          export NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          $NDK_HOME/build/tools/make_standalone_toolchain.py \
-            --arch=${ARCH} --api=${API_LEVEL} --install-dir=$HOME/android-toolchain
-          echo "$HOME/android-toolchain/bin" >> $GITHUB_PATH
 
       - name: Configure
         run: |
@@ -61,9 +55,9 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr \
             -DCMAKE_C_COMPILER=${TARGET}21-clang \
             -DCMAKE_CXX_COMPILER=${TARGET}21-clang++ \
-            -DLLVM_ENABLE_TERMINFO=OFF \
-            -DLLVM_ENABLE_ZLIB=ON \
-            -DLLVM_ENABLE_LIBXML2=ON
+            -DLLVM_ENABLE_TERMINFO=OFF \            -DLLVM_ENABLE_ZLIB=ON \
+            -DLLVM_ENABLE_LIBXML2=ON \
+            -DLLVM_TARGETS_TO_BUILD="host;NVPTX"
 
       - name: Build Cling
         run: |
