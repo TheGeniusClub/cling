@@ -76,6 +76,7 @@ jobs:
             -DLLVM_TARGET_ARCH=AArch64 \
             -DLLVM_TABLEGEN=$PWD/../native-build/bin/llvm-tblgen \
             -DCLANG_TABLEGEN=$PWD/../native-build/bin/clang-tblgen \
+            -DLLVM_TARGETS_TO_BUILD="AArch64;NVPTX" \
             -DLLVM_BUILD_TOOLS=ON \
             -DLLVM_BUILD_RUNTIME=OFF \
             -DLLVM_INCLUDE_TESTS=OFF \
