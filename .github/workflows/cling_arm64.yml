@@ -1,0 +1,83 @@
+name: Build Cling for Termux (aarch64)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_NDK_VERSION: 26.2.11394342
+      API_LEVEL: 24
+      ARCH: arm64
+      TARGET: aarch64-linux-android
+
+    steps:
+      - name: Checkout LLVM
+        uses: actions/checkout@v4
+        with:
+          repository: root-project/llvm-project
+          path: llvm
+          ref: cling-latest
+          fetch-depth: 1
+
+      - name: Checkout Cling
+        uses: actions/checkout@v4
+        with:
+          repository: root-project/cling
+          path: cling
+          fetch-depth: 1
+
+      - name: Set up Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+
+      - name: Prepare toolchain
+        run: |
+          export NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          $NDK_HOME/build/tools/make_standalone_toolchain.py \
+            --arch=${ARCH} --api=${API_LEVEL} --install-dir=$HOME/android-toolchain
+          echo "$HOME/android-toolchain/bin" >> $GITHUB_PATH
+
+      - name: Configure
+        run: |
+          mkdir build && cd build
+          cmake ../llvm/llvm \
+            -G Ninja \
+            -DLLVM_EXTERNAL_PROJECTS=cling \
+            -DLLVM_EXTERNAL_CLING_SOURCE_DIR=../cling \
+            -DLLVM_ENABLE_PROJECTS="clang" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64" \
+            -DCMAKE_SYSTEM_NAME=Android \
+            -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+            -DCMAKE_ANDROID_NDK=$NDK_HOME \
+            -DCMAKE_SYSTEM_VERSION=${API_LEVEL} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr \
+            -DCMAKE_C_COMPILER=${TARGET}21-clang \
+            -DCMAKE_CXX_COMPILER=${TARGET}21-clang++ \
+            -DLLVM_ENABLE_TERMINFO=OFF \
+            -DLLVM_ENABLE_ZLIB=ON \
+            -DLLVM_ENABLE_LIBXML2=ON
+
+      - name: Build Cling
+        run: |
+          cd build
+          ninja cling
+
+      - name: Package
+        run: |
+          cd build/bin
+          tar -cJf cling-termux-aarch64.tar.xz cling
+          mv cling-termux-aarch64.tar.xz $GITHUB_WORKSPACE/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cling-termux-aarch64
+          path: cling-termux-aarch64.tar.xz
