@@ -114,7 +114,7 @@ jobs:
       - name: Package
         run: |
           cd build
-          tar -cJf cling-termux-aarch64.tar.xz *
+          tar -cJf cling-termux-aarch64.tar.xz cling
           mv cling-termux-aarch64.tar.xz $GITHUB_WORKSPACE/
 
       - name: Upload artifact
