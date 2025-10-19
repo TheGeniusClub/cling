@@ -44,7 +44,7 @@ jobs:
           cmake -G Ninja \
             -DCMAKE_BUILD_TYPE=MinSizeRel \
             -DLLVM_ENABLE_PROJECTS="clang" \
-            -DLLVM_TARGETS_TO_BUILD="AArch64" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64;NVPTX" \
             ../llvm/llvm/
           ninja llvm-tblgen clang-tblgen
 
