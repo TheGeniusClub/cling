@@ -104,7 +104,7 @@ jobs:
       - name: Build Cling for Termux
         working-directory: build
         run: |
-          ninja cling -j8
+          ninja cling -j64
 
       #- name: Install
       #  working-directory: build
