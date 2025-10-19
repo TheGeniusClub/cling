@@ -92,7 +92,7 @@ jobs:
         working-directory: build
         run: |
           cmake -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             -DCMAKE_INSTALL_PREFIX=$PWD/install \
             -DCMAKE_SYSTEM_NAME=Android \
             -DCMAKE_SYSTEM_VERSION=24 \
