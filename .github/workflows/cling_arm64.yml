@@ -104,20 +104,32 @@ jobs:
       - name: Build Cling for Termux
         working-directory: build
         run: |
-          ninja cling -j64
+          ninja cling -j2
 
-      #- name: Install
-      #  working-directory: build
-      #  run: |
-      #    ninja install
+      - name: Package Execute
+        run: |
+          cd build
+          tar -cJf cling-termux-aarch64.bin.tar.xz cling
+          mv cling-termux-aarch64.bin.tar.xz $GITHUB_WORKSPACE/
+
+      - name: Upload Execute File To Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cling-termux-aarch64
+          path: cling-termux-aarch64.bin.tar.xz
+
+      - name: Install
+        working-directory: build
+        run: |
+          ninja install
 
       - name: Package
         run: |
-          cd build
-          tar -cJf cling-termux-aarch64.tar.xz cling
+          cd build/install
+          tar -cJf cling-termux-aarch64.tar.xz *
           mv cling-termux-aarch64.tar.xz $GITHUB_WORKSPACE/
 
-      - name: Upload artifact
+      - name: Upload Full artifact
         uses: actions/upload-artifact@v4
         with:
           name: cling-termux-aarch64
